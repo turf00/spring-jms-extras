@@ -8,7 +8,7 @@
     <version>7</version>
   </parent>
 
-  <groupId>com.bvb.spring.jms</groupId>
+  <groupId>com.bilbovonbadger</groupId>
   <artifactId>spring-jms-extras</artifactId>
   <packaging>jar</packaging>
   <version>1.0.0-SNAPSHOT</version>
