@@ -48,6 +48,27 @@ public final class KeepAliveResponse
     }
     
     @Override
+    public boolean equals(Object object)
+    {
+        if (this == object)
+        {
+            return true;
+        }
+        else if (!(object instanceof KeepAliveResponse))
+        {
+            return false;
+        }
+        KeepAliveResponse other = (KeepAliveResponse) object;
+        return Objects.equal(success, other.isSuccess()) && Objects.equal(pauseConfig, other.getPauseConfig());
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(success, pauseConfig);
+    }
+    
+    @Override
     public String toString()
     {
         return Objects.toStringHelper(this).add("success", success).add("pauseConfig", pauseConfig).toString();

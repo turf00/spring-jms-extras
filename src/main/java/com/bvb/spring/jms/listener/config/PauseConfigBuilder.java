@@ -42,6 +42,17 @@ public class PauseConfigBuilder
         this.throttleDeliveryForMs = TimeUnit.MINUTES.toMillis(delayMinutes);
         return this;
     }
+    
+    /**
+     * Throttle delivery for a period in milliseconds.
+     * @param delayMs the length of time in milliseconds to throttle by.
+     * @return the builder.
+     */
+    public PauseConfigBuilder withThrottleDeliveryForXMs(long delayMs)
+    {
+        this.throttleDeliveryForMs = delayMs;
+        return this;
+    }
 
     /**
      * The throttling will be relaxed gradually, specify how often this should occur.  The minimum value allowed here is
@@ -111,6 +122,7 @@ public class PauseConfigBuilder
         this.delayConsumptionForMs = TimeUnit.MINUTES.toMillis(delayMinutes);
         return this;
     }
+    
     
     public PauseConfig build()
     {

@@ -106,6 +106,32 @@ public class PauseConfig
     }
     
     @Override
+    public boolean equals(Object object)
+    {
+        if (this == object)
+        {
+            return true;
+        }
+        else if (!(object instanceof PauseConfig))
+        {
+            return false;
+        }
+        PauseConfig other = (PauseConfig) object;
+        
+        return Objects.equal(getDelayConsumptionForMs(), other.getDelayConsumptionForMs()) &&
+                Objects.equal(getThrottleDeliveryForPeriodMs(), other.getThrottleDeliveryForPeriodMs()) &&
+                Objects.equal(getThrottleMaxConcurrent(), other.getThrottleMaxConcurrent()) &&
+                Objects.equal(getThrottleRelaxIntervalMs(), other.getThrottleRelaxIntervalMs());
+    }
+    
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(getDelayConsumptionForMs(), getThrottleDeliveryForPeriodMs(), getThrottleMaxConcurrent(),
+            getThrottleRelaxIntervalMs());
+    }
+    
+    @Override
     public String toString()
     {
         return Objects.toStringHelper(this).add("throttleDeliveryForMs", throttleDeliveryForMs)
