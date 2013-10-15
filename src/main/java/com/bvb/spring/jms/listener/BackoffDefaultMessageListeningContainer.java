@@ -1,5 +1,7 @@
 package com.bvb.spring.jms.listener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +15,7 @@ import com.bvb.spring.jms.listener.keepalive.KeepAliveResponse;
 import com.bvb.spring.jms.listener.keepalive.KeepAliveService;
 import com.bvb.spring.jms.listener.throttler.FixedRateThrottlerCounter;
 import com.bvb.spring.jms.listener.utils.DateUtils;
+import com.google.common.base.Preconditions;
 
 /**
  * This class extends the {@link DefaultMessageListenerContainer} so that it is possible for users of it to provide a keep
@@ -42,6 +45,7 @@ public class BackoffDefaultMessageListeningContainer extends DefaultMessageListe
     private int actualFullconcurrentConsumers;
     private int actualFullmaxConcurrentConsumers;
     private volatile boolean stoppingFromExternalCall = false;
+    private List<DmlcStartObserver> observers = new ArrayList<DmlcStartObserver>();
 
     /**
      * Returns whether the DMLC is set to initially not start consuming messages until the keep alive returns success.
@@ -108,6 +112,60 @@ public class BackoffDefaultMessageListeningContainer extends DefaultMessageListe
             keepAliveManager.stop();
         }
         cancelThrottleTask();
+        notifyObserversStop(null);
+    }
+    
+    private void notifyObserversStop(PauseConfig config)
+    {
+        for (DmlcStartObserver o : observers)
+        {
+            if (config != null)
+            {
+                o.stopped();
+            }
+            else
+            {
+                o.stopped(config);
+            }
+        }
+    }
+    
+    private void notifyObserversRunning()
+    {
+        for (DmlcStartObserver o : observers)
+        {
+            o.running();
+        }
+    }
+    
+    /**
+     * Add an observer who will get notified when the BDMLC stops or starts.
+     * @param observer the observer to add.
+     * @throws NullPointerException if the observer is null.
+     */
+    public void setObserver(DmlcStartObserver observer)
+    {
+        registerObserver(observer);
+    }
+    
+    /**
+     * Add an observer who will get notified when the BDMLC stops or starts.
+     * @param observer the observer to add.
+     * @throws NullPointerException if the observer is null.
+     */
+    public void registerObserver(DmlcStartObserver observer)
+    {
+        Preconditions.checkNotNull(observer);
+        observers.add(observer);
+    }
+    
+    /**
+     * Remove an observer.
+     * @param observer the observer to remove.
+     */
+    public void unRegisterObserver(DmlcStartObserver observer)
+    {
+        observers.remove(observer);
     }
     
     @Override
@@ -152,8 +210,9 @@ public class BackoffDefaultMessageListeningContainer extends DefaultMessageListe
     protected void handlePauseConsumptionException(PauseConsumptionException ex)
     {
         // Stop the DMLC and throttle the consumption if required
-        // TODO: Add some logging
         stopDmlc(ex.getConfig());
+        logger.warn(String.format("Gateway->Stopped.  Gateway message listener returned PauseConsumption with config: [%s]",
+            ex.getConfig().toString()));
     }
     
     protected void setThrottledMaxConcurrentConsumers(int count)
@@ -177,6 +236,7 @@ public class BackoffDefaultMessageListeningContainer extends DefaultMessageListe
         if (!isRunning())
         {
             super.start();
+            notifyObserversRunning();
         }
     }
     
@@ -185,6 +245,7 @@ public class BackoffDefaultMessageListeningContainer extends DefaultMessageListe
         if (isRunning())
         {
             super.stop();
+            notifyObserversStop(config);
         }
         if (config != null)
         {
