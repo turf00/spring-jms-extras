@@ -119,7 +119,7 @@ public class BackoffDefaultMessageListeningContainer extends DefaultMessageListe
     {
         for (DmlcStartObserver o : observers)
         {
-            if (config != null)
+            if (config == null)
             {
                 o.stopped();
             }
