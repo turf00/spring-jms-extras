@@ -12,7 +12,8 @@ public interface KeepAliveService
     /**
      * The keep alive interval has expired and the client has been called to either keep the connection alive, test if it is
      * alive, or take no action as required.
-     * @return the response of the keep alive test and what the DMLC should do.
+     * @return the response of the keep alive test and what the DMLC should do.  On a successful response the PauseConfig
+     * should include how long to delay the next keep alive test.
      */
     KeepAliveResponse keepAlive();
 }
